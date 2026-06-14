@@ -859,33 +859,46 @@ h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
   #engineerPreviewBar { font-size: 10px; padding: 4px 8px; gap: 5px; }
   #engineerPreviewBar .btn { padding: 3px 8px; font-size: 10px; }
 
-  /* Nav tabs hidden in topbar on mobile — using bottom nav instead */
-  .topbar .nav-tabs { display: none !important; }
+  /* ══ BOTTOM NAV BAR ══
+     Note: nav lives inside .topbar in the DOM but position:fixed escapes it.
+     We just need overflow:visible on topbar and a high z-index. */
+  .topbar { overflow: visible !important; }
 
-  /* ══ BOTTOM NAV BAR ══ */
   .nav-tabs {
     display: flex !important;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
     background: #ffffff;
     border-top: 1px solid #e8e8e8;
-    box-shadow: 0 -1px 0 rgba(0,0,0,0.06), 0 -4px 16px rgba(0,0,0,0.07);
-    z-index: 300;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    z-index: 9999 !important;
     padding: 0;
+    /* safe area for iPhone home indicator */
+    padding-bottom: constant(safe-area-inset-bottom);
     padding-bottom: env(safe-area-inset-bottom);
-    height: calc(58px + env(safe-area-inset-bottom));
+    /* fixed height for the tap area + safe area */
+    height: auto !important;
+    min-height: 56px;
     align-items: stretch;
+    width: 100% !important;
+    box-sizing: border-box;
+    overflow: visible;
   }
   .nav-tab {
     flex: 1;
     border-radius: 0;
     font-size: 10px;
     font-weight: 500;
-    padding: 6px 2px 4px;
+    padding: 7px 2px 6px;
+    padding-bottom: calc(6px + constant(safe-area-inset-bottom));
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 2px;
     color: #aaa;
     border: none;
@@ -897,12 +910,17 @@ h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
     min-width: 0;
     transition: color 0.15s;
     letter-spacing: 0.01em;
+    line-height: 1;
+    height: auto;
+    min-height: 56px;
+    box-sizing: border-box;
   }
   .nav-tab::before {
     font-size: 20px;
     line-height: 1;
     display: block;
-    margin-bottom: 1px;
+    margin-bottom: 3px;
+    flex-shrink: 0;
   }
   .nav-tab:nth-child(1)::before { content: '📅'; }
   .nav-tab:nth-child(2)::before { content: '🗓️'; }
@@ -918,7 +936,8 @@ h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
 
   /* ══ PANEL CONTENT ══ */
   .panel {
-    padding: 16px 14px calc(74px + env(safe-area-inset-bottom));
+    padding: 16px 14px calc(80px + constant(safe-area-inset-bottom));
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
     min-height: calc(100vh - 56px);
   }
   .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -1276,10 +1295,10 @@ input, select, textarea {
     <div class="topbar-right">
       <!-- Engineer-only preview toggle -->
       <div id="engineerPreviewBar" style="display:none;align-items:center;gap:8px;background:#fffbf0;border:1.5px solid #f0d080;border-radius:10px;padding:6px 14px;">
-        <span style="font-size:12px;color:#8a6020;font-weight:500;">👁 Staff Preview</span>
+        <span style="font-size:12px;color:#8a6020;font-weight:500;">Staff Preview</span>
         <button onclick="exitPreviewMode()" class="btn btn-sm" style="background:#c9a96e;color:white;padding:5px 12px;font-size:11px;">← Back to Admin</button>
       </div>
-      <button id="enterPreviewBtn" class="btn btn-outline btn-sm" onclick="enterPreviewMode()" style="display:none;">👁 Preview as Staff</button>
+      <button id="enterPreviewBtn" class="btn btn-outline btn-sm" onclick="enterPreviewMode()" style="display:none;">Preview as Staff</button>
       <div class="user-chip">
         <div class="user-avatar" id="userAvatar">?</div>
         <div>
@@ -1357,7 +1376,7 @@ input, select, textarea {
 
     <!-- No chats state -->
     <div id="chatEmpty" style="display:none;text-align:center;padding:48px 24px;color:var(--mid);">
-      <div style="font-size:48px;margin-bottom:12px;">💬</div>
+      
       <div style="font-size:16px;font-weight:500;color:var(--charcoal);margin-bottom:8px;">No active chats this week</div>
       <div style="font-size:13px;">Event group chats are created automatically at the start of the week for shifts with claimed employees.</div>
     </div>
@@ -1369,7 +1388,7 @@ input, select, textarea {
       <!-- Right: active chat -->
       <div id="activeChatArea" style="flex:1;display:flex;flex-direction:column;background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;">
         <div id="chatPlaceholder" style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--mid);font-size:14px;flex-direction:column;gap:8px;">
-          <div style="font-size:32px;">💬</div>
+          
           <div>Select a chat to open it</div>
         </div>
         <div id="chatWindow" style="display:none;flex-direction:column;height:100%;">
@@ -1392,7 +1411,7 @@ input, select, textarea {
               <button type="button" onclick="document.getElementById('chatImageFile').click()"
                 title="Attach image or PDF"
                 style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.2s;"
-                onmouseenter="this.style.borderColor='#3a8a87'" onmouseleave="this.style.borderColor='var(--border)'">📎</button>
+                onmouseenter="this.style.borderColor='#3a8a87'" onmouseleave="this.style.borderColor='var(--border)'">Attach</button>
               <input type="file" id="chatImageFile" accept=".png,.jpg,.jpeg,.heic,.heif,.pdf" multiple style="display:none;" onchange="attachChatImage(this)">
               <input id="chatMessageInput" type="text" placeholder="Type a message…"
                 style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;"
@@ -1563,31 +1582,31 @@ input, select, textarea {
           <div class="qa-item" data-action="openAddShiftModal()" data-icon="📅" data-label="Post a New Shift">
             <button class="btn btn-outline qa-btn" onclick="openAddShiftModal()" style="justify-content:flex-start;gap:12px;width:100%;">
               <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
-              <span style="font-size:18px;">📅</span> Post a New Shift
+              Post a New Shift
             </button>
           </div>
           <div class="qa-item" data-action="openInviteModal()" data-icon="✉️" data-label="Invite New Employee">
             <button class="btn btn-outline qa-btn" onclick="openInviteModal()" style="justify-content:flex-start;gap:12px;width:100%;">
               <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
-              <span style="font-size:18px;">✉️</span> Invite New Employee
+              Invite New Employee
             </button>
           </div>
           <div class="qa-item" data-action="showPanel('employees')" data-icon="👥" data-label="Manage Employees">
             <button class="btn btn-outline qa-btn" onclick="showPanel('employees')" style="justify-content:flex-start;gap:12px;width:100%;">
               <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
-              <span style="font-size:18px;">👥</span> Manage Employees
+              Manage Employees
             </button>
           </div>
           <div class="qa-item" data-action="openEventWizard()" data-icon="🎉" data-label="Create Event &amp; Post Shifts">
             <button class="btn btn-outline qa-btn" onclick="openEventWizard()" style="justify-content:flex-start;gap:12px;width:100%;">
               <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
-              <span style="font-size:18px;">🎉</span> Create Event &amp; Post Shifts
+              Create Event &amp; Post Shifts
             </button>
           </div>
           <div class="qa-item" data-action="showPanel('schedule')" data-icon="🗓️" data-label="View Full Schedule">
             <button class="btn btn-outline qa-btn" onclick="showPanel('schedule')" style="justify-content:flex-start;gap:12px;width:100%;">
               <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
-              <span style="font-size:18px;">🗓️</span> View Full Schedule
+              View Full Schedule
             </button>
           </div>
         </div>
@@ -1726,13 +1745,13 @@ input, select, textarea {
       <div id="layoutUploadArea" onclick="document.getElementById('shiftLayoutFile').click()"
         style="border:2px dashed var(--border);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:all 0.2s;margin-top:10px;background:var(--cream);"
         onmouseenter="this.style.borderColor='#3a8a87'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:28px;margin-bottom:6px;">📎</div>
+        
         <div style="font-size:13px;font-weight:500;color:var(--charcoal);">Click to upload layout</div>
         <div style="font-size:11px;color:var(--mid);margin-top:4px;">PNG, JPG, JPEG, PDF, HEIC — max 4 MB</div>
       </div>
       <input type="file" id="shiftLayoutFile" accept=".png,.jpg,.jpeg,.pdf,.heic,.heif" style="display:none;" onchange="previewLayoutFile(this)">
       <div id="layoutPreview" style="display:none;margin-top:12px;padding:10px 14px;background:var(--cream);border-radius:10px;border:1px solid var(--border);display:none;align-items:center;gap:12px;">
-        <span id="layoutFileIcon" style="font-size:24px;">📄</span>
+        <span id="layoutFileIcon"></span>
         <div style="flex:1;">
           <div id="layoutFileName" style="font-size:13px;font-weight:500;"></div>
           <div id="layoutFileSize" style="font-size:11px;color:var(--mid);"></div>
@@ -1756,7 +1775,7 @@ input, select, textarea {
       <div style="margin-bottom:10px;">
         <button type="button" onclick="toggleAccordion('rolesAccordion','rolesChevron')"
           style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;">
-          <span>🏷️ Roles <span id="rolesSelectedCount" style="color:#3a8a87;font-size:12px;margin-left:6px;"></span></span>
+          <span>Roles <span id="rolesSelectedCount" style="color:#3a8a87;font-size:12px;margin-left:6px;"></span></span>
           <span id="rolesChevron" style="transition:transform 0.2s;">▾</span>
         </button>
         <div id="rolesAccordion" style="display:none;padding:12px 14px;border:1.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;background:white;">
@@ -1769,7 +1788,7 @@ input, select, textarea {
       <div>
         <button type="button" onclick="toggleAccordion('peopleAccordion','peopleChevron')"
           style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;">
-          <span>👤 Specific Employees <span id="peopleSelectedCount" style="color:#3a8a87;font-size:12px;margin-left:6px;"></span></span>
+          <span>Specific Employees <span id="peopleSelectedCount" style="color:#3a8a87;font-size:12px;margin-left:6px;"></span></span>
           <span id="peopleChevron" style="transition:transform 0.2s;">▾</span>
         </button>
         <div id="peopleAccordion" style="display:none;padding:12px 14px;border:1.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;background:white;">
@@ -1795,7 +1814,7 @@ input, select, textarea {
       <button class="btn btn-outline" onclick="closeModal('shiftDetailModal')">Close</button>
       <button id="claimShiftBtn" onclick="claimShift(currentShiftId)" style="display:none;padding:11px 22px;border-radius:10px;border:none;background:#2d9e5f;color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;">✋ Claim Shift</button>
       <button id="dropShiftBtn" class="btn btn-outline btn-sm" onclick="confirmDropShift(currentShiftId)" style="display:none;border-color:#e05252;color:#e05252;">↩ Drop Shift</button>
-      <button id="uploadPhotosBtn" class="btn btn-outline btn-sm" onclick="openPhotoUpload(currentShiftId)" style="display:none;border-color:#3a8a87;color:#3a8a87;">📷 Upload Completion Photos</button>
+      <button id="uploadPhotosBtn" class="btn btn-outline btn-sm" onclick="openPhotoUpload(currentShiftId)" style="display:none;border-color:#3a8a87;color:#3a8a87;">Upload Completion Photos</button>
       <button class="btn btn-danger btn-sm" id="deleteShiftBtn" onclick="deleteCurrentShift()" style="display:none;">Delete Shift</button>
     </div>
   </div>
@@ -1822,11 +1841,11 @@ input, select, textarea {
 
     <!-- Photo 1: Main Floor -->
     <div style="margin-bottom:16px;">
-      <div style="font-weight:500;font-size:13px;margin-bottom:8px;">📸 Photo 1 — Main Floor</div>
+      <div style="font-weight:500;font-size:13px;margin-bottom:8px;">Photo 1 — Main Floor</div>
       <div id="photo1DropArea" onclick="document.getElementById('photo1Input').click()"
         style="border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color 0.2s;"
         onmouseenter="this.style.borderColor='#3a8a87'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:24px;margin-bottom:4px;">🖼️</div>
+        
         <div style="font-size:12px;color:var(--mid);">Click to upload · PNG, JPG, JPEG, HEIC</div>
       </div>
       <input type="file" id="photo1Input" accept=".png,.jpg,.jpeg,.heic,.heif" style="display:none;" onchange="previewPhoto(this,'photo1Preview','photo1DropArea')">
@@ -1841,11 +1860,11 @@ input, select, textarea {
 
     <!-- Photo 2: Behind Altar Divider -->
     <div style="margin-bottom:16px;">
-      <div style="font-weight:500;font-size:13px;margin-bottom:8px;">📸 Photo 2 — Behind Altar Divider <span style="font-size:11px;color:var(--mid);font-weight:400;">(optional)</span></div>
+      <div style="font-weight:500;font-size:13px;margin-bottom:8px;">Photo 2 — Behind Altar Divider <span style="font-size:11px;color:var(--mid);font-weight:400;">(optional)</span></div>
       <div id="photo2DropArea" onclick="document.getElementById('photo2Input').click()"
         style="border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color 0.2s;"
         onmouseenter="this.style.borderColor='#3a8a87'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:24px;margin-bottom:4px;">🖼️</div>
+        
         <div style="font-size:12px;color:var(--mid);">Click to upload · PNG, JPG, JPEG, HEIC</div>
       </div>
       <input type="file" id="photo2Input" accept=".png,.jpg,.jpeg,.heic,.heif" style="display:none;" onchange="previewPhoto(this,'photo2Preview','photo2DropArea')">
@@ -2646,7 +2665,7 @@ function renderMyShifts() {
       const claimers   = getShiftClaimers(s);
       const coworkers  = claimers.filter(c => c.uid !== uid);
       const coworkerLine = coworkers.length > 0
-        ? `<div class="shift-notes" style="margin-top:4px;">👥 Also working: ${coworkers.map(c=>c.name.split(' ')[0]).join(', ')}</div>`
+        ? `<div class="shift-notes" style="margin-top:4px;">Also working: ${coworkers.map(c=>c.name.split(' ')[0]).join(', ')}</div>`
         : '';
 
       // Status badge
@@ -2679,8 +2698,8 @@ function renderMyShifts() {
 
         ${(showLayout || canUpload || canDrop) ? `
         <div style="width:100%;display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 4px 68px;border-top:1px solid var(--border);margin-top:10px;">
-          ${showLayout ? `<button onclick="${hasShiftLayout ? `viewShiftLayout('${id}')` : `viewEventLayout('${linkedEvent[0]}')`}" class="btn btn-sage btn-sm" style="font-size:12px;">📋 View Setup Layout</button>` : ''}
-          ${canUpload ? `<button onclick="openPhotoUpload('${id}')" class="btn btn-sm" style="font-size:12px;padding:7px 14px;border-radius:8px;background:${hasPhotos?'#3a8a87':'white'};color:${hasPhotos?'white':'#3a8a87'};border:1.5px solid #3a8a87;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">${hasPhotos ? '📸 Photos Saved ✓' : '📷 Upload Completion Photos'}</button>` : ''}
+          ${showLayout ? `<button onclick="${hasShiftLayout ? `viewShiftLayout('${id}')` : `viewEventLayout('${linkedEvent[0]}')`}" class="btn btn-sage btn-sm" style="font-size:12px;">View Setup Layout</button>` : ''}
+          ${canUpload ? `<button onclick="openPhotoUpload('${id}')" class="btn btn-sm" style="font-size:12px;padding:7px 14px;border-radius:8px;background:${hasPhotos?'#3a8a87':'white'};color:${hasPhotos?'white':'#3a8a87'};border:1.5px solid #3a8a87;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">${hasPhotos ? 'Photos Saved ✓' : 'Upload Completion Photos'}</button>` : ''}
           ${canDrop ? `<button onclick="confirmDropShift('${id}')" class="btn btn-sm" style="font-size:12px;padding:7px 14px;border-radius:8px;background:white;color:#e05252;border:1.5px solid #e05252;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">↩ Drop Shift</button>` : ''}
         </div>` : ''}
       </div>`;
@@ -2722,7 +2741,7 @@ function renderMyShifts() {
           <div class="shift-time">${fmtTime(s.startTime)} – ${fmtTime(s.endTime)}</div>
           <div class="shift-role">${s.shiftType || 'Shift'}</div>
           ${s.notes ? `<div class="shift-notes">${s.notes}</div>` : ''}
-          ${coworkers.length > 0 ? `<div class="shift-notes" style="margin-top:4px;">👥 Also working: ${coworkers.map(c=>c.name.split(' ')[0]).join(', ')}</div>` : ''}
+          ${coworkers.length > 0 ? `<div class="shift-notes" style="margin-top:4px;">Also working: ${coworkers.map(c=>c.name.split(' ')[0]).join(', ')}</div>` : ''}
           <div style="margin-top:8px;">
             <button onclick="confirmDropShift('${id}')" class="btn btn-sm" style="font-size:12px;padding:6px 12px;border-radius:8px;background:white;color:#e05252;border:1.5px solid #e05252;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">↩ Drop Shift</button>
           </div>
@@ -2748,7 +2767,7 @@ function renderMyShifts() {
     layoutsList.innerHTML = upcomingLayouts.map(([id,ev]) => {
       const d = new Date(ev.date + 'T12:00:00');
       return `<div style="background:white;border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px var(--shadow);">
-        <div style="font-size:28px;">📋</div>
+        
         <div style="flex:1;">
           <div style="font-weight:500;font-size:14px;">${ev.name}</div>
           <div style="font-size:12px;color:var(--mid);margin-top:2px;">${MONTHS[d.getMonth()]} ${d.getDate()}${ev.venue ? ' · ' + ev.venue : ''}${ev.guests ? ' · ' + ev.guests + ' guests' : ''}</div>
@@ -2769,7 +2788,7 @@ function renderAvailability() {
     const avail = availability[day] !== false; // default to available
     return `<div class="avail-day ${avail ? 'available' : ''}" onclick="toggleAvail('${day}', this)">
       <div class="day-name">${day.slice(0,3)}</div>
-      <div class="avail-icon">${avail ? '✅' : '○'}</div>
+      <div class="avail-icon">${avail ? '✓' : '○'}</div>
       <div class="avail-status">${avail ? 'Available' : 'Unavailable'}</div>
     </div>`;
   }).join('');
@@ -2815,7 +2834,7 @@ function renderTeamAvailability() {
           ${days.map(day => `
             <div style="text-align:center;padding:8px 12px;border-radius:10px;border:1.5px solid ${avail[day] !== false ? '#2d9e5f' : 'var(--border)'};background:${avail[day] !== false ? 'rgba(45,158,95,0.08)' : 'white'};min-width:60px;">
               <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mid);">${day.slice(0,3)}</div>
-              <div style="font-size:18px;margin:4px 0;">${avail[day] !== false ? '✅' : '—'}</div>
+              <div style="font-size:18px;margin:4px 0;">${avail[day] !== false ? '✓' : '—'}</div>
               <div style="font-size:10px;color:${avail[day] !== false ? '#2d9e5f' : 'var(--light)'};">${avail[day] !== false ? 'Avail' : 'Off'}</div>
             </div>`).join('')}
         </div>
@@ -2832,7 +2851,7 @@ function toggleEmpAvail(id) {
 function toggleAvail(day, el) {
   availability[day] = !availability[day];
   el.classList.toggle('available');
-  el.querySelector('.avail-icon').textContent = availability[day] ? '✅' : '○';
+  el.querySelector('.avail-icon').textContent = availability[day] ? '✓' : '○';
   el.querySelector('.avail-status').textContent = availability[day] ? 'Available' : 'Unavailable';
   saveAvailability(true); // auto-save silently
 }
@@ -3047,7 +3066,7 @@ function previewLayoutFile(input) {
   _layoutFileName = file.name;
   _layoutFileType = file.type || 'application/octet-stream';
   const ext = file.name.split('.').pop().toLowerCase();
-  const icon = ['pdf'].includes(ext) ? '📄' : '🖼️';
+  const icon = ['pdf'].includes(ext) ? '' : '';
   const reader = new FileReader();
   reader.onload = e => {
     _layoutFileData = e.target.result; // full data URL (base64)
@@ -3230,10 +3249,10 @@ function showShiftDetail(shiftId) {
   let spotsLine = '';
   if (spots > 1) {
     const remaining = spots - filled;
-    spotsLine = `<p>👥 <strong>Spots:</strong> ${filled}/${spots} filled${remaining > 0 ? ` — ${remaining} still open` : ' — Full'}</p>`;
+    spotsLine = `<p><strong>Spots:</strong> ${filled}/${spots} filled${remaining > 0 ? ` — ${remaining} still open` : ' — Full'}</p>`;
   } else {
     spotsLine = isFull
-      ? `<p>✅ <strong>Claimed by:</strong> ${claimers.map(c=>c.name).join(', ')}</p>`
+      ? `<p><strong>Claimed by:</strong> ${claimers.map(c=>c.name).join(', ')}</p>`
       : `<p style="color:#2d9e5f;font-weight:500;">🟢 Open — not yet claimed</p>`;
   }
 
@@ -3250,7 +3269,7 @@ function showShiftDetail(shiftId) {
     const people = (s.visiblePeople || []).map(uid => { const u = allEmployees[uid]; return u ? u.firstName + ' ' + u.lastName : uid; }).join(', ');
     if (roles || people) {
       visNote = `<p style="margin-top:8px;padding:8px 12px;background:var(--cream);border-radius:8px;font-size:12px;">
-        👁 <strong>Visible to:</strong>${roles ? ' Roles: ' + roles : ''}${roles && people ? '; ' : ''}${people ? ' People: ' + people : ''}
+        <strong>Visible to:</strong>${roles ? ' Roles: ' + roles : ''}${roles && people ? '; ' : ''}${people ? ' People: ' + people : ''}
       </p>`;
     }
   }
@@ -3259,7 +3278,7 @@ function showShiftDetail(shiftId) {
   let layoutBtn = '';
   if (s.layout) {
     layoutBtn = `<div style="margin-top:12px;">
-      <button onclick="viewShiftLayout('${shiftId}')" class="btn btn-sage btn-sm" style="gap:8px;">📋 View Setup Layout</button>
+      <button onclick="viewShiftLayout('${shiftId}')" class="btn btn-sage btn-sm" style="gap:8px;">View Setup Layout</button>
     </div>`;
   } else {
     // Fall back to event layout on same date
@@ -3267,16 +3286,16 @@ function showShiftDetail(shiftId) {
     const isSetupCrew   = window._currentUser && window._currentUser.role === 'Event Setup Crew';
     if (matchingEvent && (isAdmin || isSetupCrew)) {
       layoutBtn = `<div style="margin-top:12px;">
-        <button onclick="viewEventLayout('${matchingEvent[0]}');closeModal('shiftDetailModal');" class="btn btn-sage btn-sm">📋 View Event Layout</button>
+        <button onclick="viewEventLayout('${matchingEvent[0]}');closeModal('shiftDetailModal');" class="btn btn-sage btn-sm">View Event Layout</button>
       </div>`;
     }
   }
 
   document.getElementById('shiftDetailBody').innerHTML = `
-    <p>📅 <strong>Date:</strong> ${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}</p>
+    <p><strong>Date:</strong> ${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}</p>
     <p>🕐 <strong>Time:</strong> ${fmtTime(s.startTime)} – ${fmtTime(s.endTime)}</p>
-    <p>🏷️ <strong>Type:</strong> ${s.shiftType || '—'}</p>
-    ${s.notes ? `<p>📝 <strong>Notes:</strong> ${s.notes}</p>` : ''}
+    <p><strong>Type:</strong> ${s.shiftType || '—'}</p>
+    ${s.notes ? `<p><strong>Notes:</strong> ${s.notes}</p>` : ''}
     ${spotsLine}${claimensList}${visNote}${layoutBtn}
   `;
 
@@ -3310,13 +3329,13 @@ function showShiftDetail(shiftId) {
   if (uploadBtn) {
     const showUpload = iClaimed && isSetupRole && isPastOrToday && !isAdmin;
     uploadBtn.style.display = showUpload ? '' : 'none';
-    uploadBtn.textContent = alreadyUploaded ? '📷 View / Update Photos' : '📷 Upload Completion Photos';
+    uploadBtn.textContent = alreadyUploaded ? 'View / Update Photos' : 'Upload Completion Photos';
   }
 
   // If photos already uploaded, show them in the body too
   if (s.completionPhotos && (isAdmin || iClaimed)) {
     const cp = s.completionPhotos;
-    let photoHtml = '<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;"><div style="font-weight:500;font-size:13px;margin-bottom:10px;">📸 Completion Photos</div>';
+    let photoHtml = '<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;"><div style="font-weight:500;font-size:13px;margin-bottom:10px;">Completion Photos</div>';
     if (cp.mainFloor) photoHtml += `<div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--mid);margin-bottom:4px;">Main Floor</div><img src="${cp.mainFloor}" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:200px;object-fit:cover;"></div>`;
     if (cp.altarDivider) photoHtml += `<div><div style="font-size:11px;color:var(--mid);margin-bottom:4px;">Behind Altar Divider</div><img src="${cp.altarDivider}" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:200px;object-fit:cover;"></div>`;
     photoHtml += '</div>';
@@ -3690,10 +3709,10 @@ function renderEventsList() {
       <div style="flex:1;min-width:0;">
         <div style="font-weight:500;font-size:13px;">${e.name}${e.type ? ' <span style="font-size:10px;color:var(--mid);font-weight:400;">· ' + e.type + '</span>' : ''}</div>
         <div style="font-size:11px;color:var(--mid);margin-top:2px;">${e.venue || ''}${e.guests ? ' · ' + e.guests + ' guests' : ''}${e.notes ? ' · ' + e.notes : ''}</div>
-        ${hasLayout ? '<div style="font-size:10px;color:#3a8a87;margin-top:3px;">📋 Layout available</div>' : ''}
+        ${hasLayout ? '<div style="font-size:10px;color:#3a8a87;margin-top:3px;">Layout available</div>' : ''}
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
-        ${showLayoutBtn ? `<button onclick="viewEventLayout('${id}')" class="btn btn-outline btn-sm" style="font-size:11px;padding:5px 10px;">📋 Layout</button>` : ''}
+        ${showLayoutBtn ? `<button onclick="viewEventLayout('${id}')" class="btn btn-outline btn-sm" style="font-size:11px;padding:5px 10px;">Layout</button>` : ''}
         ${window._isAdmin ? `<button onclick="openEventModal('${id}')" class="btn btn-outline btn-sm" style="font-size:11px;padding:5px 10px;">Edit</button>` : ''}
         ${window._isAdmin ? `<button onclick="deleteEvent('${id}')" style="background:none;border:none;cursor:pointer;color:var(--light);font-size:18px;padding:4px;" title="Delete">×</button>` : ''}
       </div>
@@ -3880,7 +3899,7 @@ async function saveCompletionPhotos() {
     });
 
     closeModal('photoUploadModal');
-    toast('Photos saved! Great work. 🎉', 'success');
+    toast('Photos saved!', 'success');
   } catch(e) {
     errEl.textContent = 'Error saving photos: ' + e.message;
     errEl.style.display = 'block';
@@ -3948,7 +3967,7 @@ function renderChatList() {
     const memberCount = (c.members||[]).length;
     return `<div onclick="openChat('${id}')" style="padding:14px 16px;border-radius:12px;border:1.5px solid ${isActive?'#3a8a87':'var(--border)'};background:${isActive?'rgba(58,138,135,0.08)':'white'};cursor:pointer;transition:all 0.2s;">
       <div style="font-weight:600;font-size:13px;color:var(--charcoal);margin-bottom:4px;">${c.name || 'Event Chat'}</div>
-      <div style="font-size:11px;color:var(--mid);">${dateStr ? '📅 ' + dateStr + ' · ' : ''}👥 ${memberCount} member${memberCount!==1?'s':''}</div>
+      <div style="font-size:11px;color:var(--mid);">${dateStr ? dateStr + ' · ' : ''}${memberCount} member${memberCount!==1?'s':''}</div>
     </div>`;
   }).join('');
 }
@@ -4020,7 +4039,7 @@ function renderChatImagePreview() {
   strip.style.display = 'flex';
   strip.innerHTML = _chatPendingImages.map((img, i) =>
     `<div style="position:relative;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--cream);border-radius:8px;border:1px solid var(--border);font-size:12px;">
-      <span>${img.isPdf ? '📄' : '🖼️'}</span>
+      <span>${img.isPdf ? '' : ''}</span>
       <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${img.name}</span>
       <button onclick="_chatPendingImages.splice(${i},1);renderChatImagePreview()" style="background:none;border:none;cursor:pointer;color:var(--mid);font-size:15px;line-height:1;padding:0 0 0 4px;">×</button>
     </div>`
@@ -4295,7 +4314,7 @@ function addWizSetupShift(type, start, end, spots) {
   document.getElementById('wSetupShiftsList').insertAdjacentHTML('beforeend',`
     <div class="wiz-shift-row" id="${id}">
       <button class="wiz-remove-btn" onclick="removeWizRow('${id}')">✕</button>
-      <div style="font-weight:700;font-size:11px;color:var(--sage-dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">📦 Setup Shift — Event Setup Crew</div>
+      <div style="font-weight:700;font-size:11px;color:var(--sage-dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Setup Shift — Event Setup Crew</div>
       <div class="grid-2">
         <div class="form-group"><label>Date</label><input type="date" class="wiz-setup-date" value="${defDate}"></div>
         <div class="form-group"><label>Shift Type</label><select class="wiz-setup-type">${opts}</select></div>
@@ -4324,7 +4343,7 @@ function addWizEventShift(role, type, start, end, spots) {
   document.getElementById('wEventShiftsList').insertAdjacentHTML('beforeend',`
     <div class="wiz-shift-row" id="${id}">
       <button class="wiz-remove-btn" onclick="removeWizRow('${id}')">✕</button>
-      <div style="font-weight:700;font-size:11px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">⭐ Event-Day Shift</div>
+      <div style="font-weight:700;font-size:11px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Event-Day Shift</div>
       <div class="grid-2">
         <div class="form-group"><label>Role</label><select class="wiz-event-role">${roleOpts}</select></div>
         <div class="form-group"><label>Date</label><input type="date" class="wiz-event-date" value="${evDate}"></div>
@@ -4386,12 +4405,12 @@ function buildWizReview() {
     ${hasLayout?`<div style="margin-top:6px;font-size:12px;color:var(--sage-dark);">✓ Setup layout included</div>`:''}
   </div>`;
   if (setup.length) {
-    html += `<div class="wiz-review-section"><div class="wiz-review-label">📦 Setup Shifts (${setup.length})</div>`;
+    html += `<div class="wiz-review-section"><div class="wiz-review-label">Setup Shifts (${setup.length})</div>`;
     setup.forEach(s => { html += `<div class="wiz-review-item"><span style="color:var(--sage);">⬤</span><span><strong>${s.type}</strong> — ${fmtDate(s.date)}, ${fmtTime(s.start)}–${fmtTime(s.end)}</span><span style="margin-left:auto;color:var(--mid);">${s.spots} spot${s.spots>1?'s':''}</span></div>`; });
     html += `</div>`;
   }
   if (evShifts.length) {
-    html += `<div class="wiz-review-section"><div class="wiz-review-label">⭐ Event-Day Shifts (${evShifts.length})</div>`;
+    html += `<div class="wiz-review-section"><div class="wiz-review-label">Event-Day Shifts (${evShifts.length})</div>`;
     evShifts.forEach(s => { html += `<div class="wiz-review-item"><span style="color:var(--gold);">⬤</span><span><strong>${s.role}</strong> — ${fmtTime(s.start)}–${fmtTime(s.end)}</span><span style="margin-left:auto;color:var(--mid);">${s.spots} spot${s.spots>1?'s':''}</span></div>`; });
     html += `</div>`;
   }
@@ -4452,7 +4471,7 @@ async function wizPost() {
   } catch(e) {
     toast('Error: ' + e.message, 'error');
   } finally {
-    btn.disabled = false; btn.textContent = '🎉 Create Event & Post All Shifts';
+    btn.disabled = false; btn.textContent = 'Create Event & Post All Shifts';
   }
 }
 
@@ -4794,7 +4813,7 @@ window.addEventListener('load', () => { setTimeout(qaInitDraggable, 600); });
 
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="wizBack(3)">← Back</button>
-        <button class="btn btn-sage" id="wizPostBtn" onclick="wizPost()">🎉 Create Event &amp; Post All Shifts</button>
+        <button class="btn btn-sage" id="wizPostBtn" onclick="wizPost()">Create Event &amp; Post All Shifts</button>
       </div>
     </div><!-- /step4 -->
 
