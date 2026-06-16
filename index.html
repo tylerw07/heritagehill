@@ -867,77 +867,61 @@ h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
   .nav-tabs {
     display: flex !important;
     position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    /* sit 8px above the true bottom so it clears iPhone chrome */
+    bottom: 8px !important;
+    left: 8px !important;
+    right: 8px !important;
     top: auto !important;
     background: #ffffff;
-    border-top: 1px solid #e8e8e8;
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
     z-index: 9999 !important;
     padding: 0;
-    /* safe area for iPhone home indicator */
-    padding-bottom: constant(safe-area-inset-bottom);
-    padding-bottom: env(safe-area-inset-bottom);
-    /* fixed height for the tap area + safe area */
-    height: auto !important;
-    min-height: 56px;
+    height: 56px !important;
     align-items: stretch;
-    width: 100% !important;
+    width: auto !important;
     box-sizing: border-box;
-    overflow: visible;
+    overflow: hidden;
   }
   .nav-tab {
     flex: 1;
     border-radius: 0;
-    font-size: 10px;
-    font-weight: 500;
-    padding: 7px 2px 6px;
-    padding-bottom: calc(6px + constant(safe-area-inset-bottom));
-    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    font-size: 11px;
+    font-weight: 600;
+    padding: 0 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    gap: 2px;
+    justify-content: center;
+    gap: 0;
     color: #aaa;
     border: none;
-    border-top: 2px solid transparent;
+    border-top: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     background: transparent;
     min-width: 0;
-    transition: color 0.15s;
+    transition: color 0.15s, background 0.15s;
     letter-spacing: 0.01em;
     line-height: 1;
-    height: auto;
-    min-height: 56px;
+    height: 100%;
     box-sizing: border-box;
   }
-  .nav-tab::before {
-    font-size: 20px;
-    line-height: 1;
-    display: block;
-    margin-bottom: 3px;
-    flex-shrink: 0;
-  }
-  .nav-tab:nth-child(1)::before { content: '📅'; }
-  .nav-tab:nth-child(2)::before { content: '🗓️'; }
-  .nav-tab:nth-child(3)::before { content: '✅'; }
-  .nav-tab:nth-child(4)::before { content: '💬'; }
-  .nav-tab:nth-child(5)::before { content: '👥'; }
-  .nav-tab:nth-child(6)::before { content: '⚙️'; }
+  /* No emoji ::before icons */
+  .nav-tab::before { display: none; }
   .nav-tab.active {
     color: #3a8a87;
-    border-top-color: #3a8a87;
-    background: rgba(58,138,135,0.04);
+    background: rgba(58,138,135,0.08);
   }
+  /* First and last tabs get rounded corners to match pill */
+  .nav-tab:first-child { border-radius: 16px 0 0 16px; }
+  .nav-tab:last-child  { border-radius: 0 16px 16px 0; }
 
   /* ══ PANEL CONTENT ══ */
   .panel {
-    padding: 16px 14px calc(80px + constant(safe-area-inset-bottom));
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    padding: 16px 14px 88px;
     min-height: calc(100vh - 56px);
   }
   .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -1603,6 +1587,12 @@ input, select, textarea {
               Create Event &amp; Post Shifts
             </button>
           </div>
+          <div class="qa-item" data-action="openRecurringShiftsModal()" data-icon="🔁" data-label="Manage Recurring Weekly Shifts">
+            <button class="btn btn-outline qa-btn" onclick="openRecurringShiftsModal()" style="justify-content:flex-start;gap:12px;width:100%;">
+              <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
+              Manage Recurring Weekly Shifts
+            </button>
+          </div>
           <div class="qa-item" data-action="showPanel('schedule')" data-icon="🗓️" data-label="View Full Schedule">
             <button class="btn btn-outline qa-btn" onclick="showPanel('schedule')" style="justify-content:flex-start;gap:12px;width:100%;">
               <span class="qa-drag-handle" title="Drag to reorder">⠿</span>
@@ -1667,9 +1657,12 @@ input, select, textarea {
         <option value="Event Setup Crew">Event Setup Crew</option>
         <option value="Event Coordinator">Event Coordinator</option>
         <option value="Catering Staff">Catering Staff</option>
+        <option value="Bartender">Bartender</option>
         <option value="Audio/Visual Tech">Audio/Visual Tech</option>
         <option value="Floral & Décor">Floral & Décor</option>
         <option value="Security">Security</option>
+        <option value="Furniture Flipper">Furniture Flipper</option>
+        <option value="Closing Crew">Closing Crew</option>
       </select>
     </div>
     <div class="form-group">
@@ -1736,6 +1729,26 @@ input, select, textarea {
       <div class="form-group">
         <label>Event / Notes</label>
         <input type="text" id="shiftNotes" placeholder="e.g. Johnson Wedding">
+      </div>
+    </div>
+
+    <!-- Repeat weekly -->
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-weight:500;font-size:14px;">Repeat weekly</div>
+          <div style="font-size:11px;color:var(--mid);">Automatically posts this same shift every week</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="shiftRepeats" onchange="toggleShiftRepeatWeeks()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="shiftRepeatWeeksRow" style="display:none;margin-top:12px;">
+        <label>Repeat for how many weeks?</label>
+        <input type="number" id="shiftRepeatWeeks" value="8" min="2" max="52"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+        <div style="font-size:11px;color:var(--mid);margin-top:6px;">New shifts will keep being created on this same day of the week, going forward. You can edit or delete any individual occurrence later without affecting the others.</div>
       </div>
     </div>
 
@@ -1907,9 +1920,12 @@ input, select, textarea {
         <option value="Event Setup Crew">Event Setup Crew</option>
         <option value="Event Coordinator">Event Coordinator</option>
         <option value="Catering Staff">Catering Staff</option>
+        <option value="Bartender">Bartender</option>
         <option value="Audio/Visual Tech">Audio/Visual Tech</option>
         <option value="Floral &amp; Décor">Floral &amp; Décor</option>
         <option value="Security">Security</option>
+        <option value="Furniture Flipper">Furniture Flipper</option>
+        <option value="Closing Crew">Closing Crew</option>
       </select>
     </div>
     <div class="form-group">
@@ -2132,6 +2148,9 @@ function roleClass(role) {
     'Audio/Visual Tech': 'role-audio-visual',
     'Floral & Décor': 'role-event-setup',
     'Security': 'role-catering',
+    'Bartender': 'role-catering',
+    'Furniture Flipper': 'role-event-setup',
+    'Closing Crew': 'role-event-setup',
   };
   return map[role] || 'role-coordinator';
 }
@@ -2145,6 +2164,9 @@ function chipColor(role) {
     'Audio/Visual Tech': 'blush',
     'Floral & Décor': '',
     'Security': 'blush',
+    'Bartender': 'blush',
+    'Furniture Flipper': '',
+    'Closing Crew': '',
   };
   return map[role] || '';
 }
@@ -3013,7 +3035,7 @@ function openAddShiftModalFor(uid, date) {
   }
 }
 
-const ALL_ROLES = ['Venue Manager','Event Setup Crew','Event Coordinator','Catering Staff','Audio/Visual Tech','Floral & Décor','Security'];
+const ALL_ROLES = ['Venue Manager','Event Setup Crew','Event Coordinator','Catering Staff','Bartender','Audio/Visual Tech','Floral & Décor','Security','Furniture Flipper','Closing Crew'];
 
 function populateVisibilityOptions(preRoles=[], prePeople=[]) {
   // Roles — use roles from employees + fallback to full list
@@ -3105,6 +3127,9 @@ function resetShiftModal() {
   document.getElementById('peopleAccordion').style.display = 'none';
   document.getElementById('rolesChevron').style.transform = '';
   document.getElementById('peopleChevron').style.transform = '';
+  document.getElementById('shiftRepeats').checked = false;
+  document.getElementById('shiftRepeatWeeks').value = '8';
+  document.getElementById('shiftRepeatWeeksRow').style.display = 'none';
 }
 
 async function saveShift() {
@@ -3116,6 +3141,8 @@ async function saveShift() {
   const spots = parseInt(document.getElementById('shiftSpots').value) || 1;
   const layoutText = document.getElementById('shiftLayoutText').value.trim();
   const err   = document.getElementById('shiftError');
+  const repeats = document.getElementById('shiftRepeats').checked;
+  const repeatWeeks = repeats ? (parseInt(document.getElementById('shiftRepeatWeeks').value) || 8) : 1;
 
   if (!date) { err.textContent = 'Please select a date.'; err.style.display = 'block'; return; }
 
@@ -3132,30 +3159,51 @@ async function saveShift() {
 
   const { db, ref, push } = window._fb;
 
-  // If spots > 1, create multiple shift records (one per slot)
   const saveBtn = document.querySelector('#addShiftModal .btn-sage');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Posting...'; }
 
+  // Generate the list of dates to post — just the one date, or N weekly occurrences
+  const recurId = repeats ? ('rec_' + Date.now()) : null;
+  const dates = [];
+  const baseDate = new Date(date + 'T12:00:00');
+  for (let w = 0; w < repeatWeeks; w++) {
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + (w * 7));
+    dates.push(d.toISOString().slice(0,10));
+  }
+
   try {
-    const shiftData = {
-      date, startTime: start, endTime: end,
-      shiftType: type, notes,
-      spotsTotal: spots,
-      claimers: [],        // array of {uid, name} — grows as people claim
-      visibleRoles, visiblePeople,
-      layout,
-      createdAt: Date.now()
-    };
-    await push(ref(db, 'shifts'), shiftData);
+    for (const d of dates) {
+      const shiftData = {
+        date: d, startTime: start, endTime: end,
+        shiftType: type, notes,
+        spotsTotal: spots,
+        claimers: [],
+        visibleRoles, visiblePeople,
+        layout,
+        createdAt: Date.now()
+      };
+      if (recurId) shiftData.recurringId = recurId;
+      await push(ref(db, 'shifts'), shiftData);
+    }
     closeModal('addShiftModal');
     resetShiftModal();
-    toast(spots > 1 ? `Shift posted — ${spots} spots available!` : 'Shift posted!', 'success');
+    if (repeats) {
+      toast(`Shift posted for ${dates.length} weeks!`, 'success');
+    } else {
+      toast(spots > 1 ? `Shift posted — ${spots} spots available!` : 'Shift posted!', 'success');
+    }
   } catch(e) {
     err.textContent = 'Error saving shift: ' + e.message;
     err.style.display = 'block';
   } finally {
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Post Shift'; }
   }
+}
+
+function toggleShiftRepeatWeeks() {
+  const show = document.getElementById('shiftRepeats').checked;
+  document.getElementById('shiftRepeatWeeksRow').style.display = show ? '' : 'none';
 }
 
 
@@ -4476,6 +4524,167 @@ async function wizPost() {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// RECURRING WEEKLY SHIFTS — standing weekly schedule template
+// ══════════════════════════════════════════════════════════════════
+
+const RECUR_STORAGE_KEY = 'hh_recurring_template';
+const RECUR_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// Default template matching the venue's actual weekly needs
+const RECUR_DEFAULTS = [
+  { day: 'Friday',   label: 'Meet N Greet',      role: 'Event Coordinator', start: '12:00', end: '18:00', spots: 1, notes: 'Meet N Greet — time depends on schedule (12-6p or 3-9p)' },
+  { day: 'Friday',   label: 'Rehearsal Dinner',  role: 'Event Coordinator', start: '18:00', end: '21:30', spots: 1, notes: 'Rehearsal Dinner' },
+  { day: 'Wednesday',label: 'Weekday Furniture Flipper', role: 'Furniture Flipper', start: '09:00', end: '13:00', spots: 2, notes: 'Furniture flip — can be done anytime Wed' },
+  { day: 'Thursday', label: 'Thursday Reset',    role: 'Closing Crew', start: '09:00', end: '13:00', spots: 1, notes: 'Reset — can be done anytime Thurs' },
+  { day: 'Saturday', label: 'Venue Manager',     role: 'Venue Manager', start: '13:00', end: '01:00', spots: 1, notes: '1pm–1am Saturday' },
+  { day: 'Saturday', label: 'Saturday Flipper',  role: 'Furniture Flipper', start: '14:00', end: '18:00', spots: 1, notes: 'Full flip — option to add up to 2 more, generally 2-6p depending on ceremony time' },
+  { day: 'Saturday', label: 'Closing Help',      role: 'Closing Crew', start: '22:00', end: '01:00', spots: 1, notes: 'Closing — 10p-1am Saturday' },
+  { day: 'Saturday', label: 'Security',          role: 'Security', start: '17:00', end: '21:00', spots: 1, notes: 'Security — usually 5-9p, depends on ceremony start time' },
+];
+
+let _recurRid = 0;
+
+function openRecurringShiftsModal() {
+  const list = document.getElementById('recurringShiftsList');
+  list.innerHTML = '';
+  _recurRid = 0;
+
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(RECUR_STORAGE_KEY) || 'null'); } catch(e) {}
+  const template = (saved && Array.isArray(saved) && saved.length) ? saved : RECUR_DEFAULTS;
+
+  template.forEach(row => addRecurringShiftRow(row));
+  openModal('recurringShiftsModal');
+}
+
+function addRecurringShiftRow(data) {
+  data = data || {};
+  const id = 'recur_' + (++_recurRid);
+  const dayOpts = RECUR_DAYS.map(d => `<option value="${d}" ${d===(data.day||'Saturday')?'selected':''}>${d}</option>`).join('');
+  const roleOpts = ALL_ROLES.map(r => `<option value="${r}" ${r===(data.role||'Venue Manager')?'selected':''}>${r}</option>`).join('');
+
+  document.getElementById('recurringShiftsList').insertAdjacentHTML('beforeend', `
+    <div class="wiz-shift-row" id="${id}">
+      <button class="wiz-remove-btn" onclick="removeWizRow('${id}')">✕</button>
+      <div class="form-group">
+        <label>Shift Name</label>
+        <input type="text" class="recur-label" value="${(data.label||'').replace(/"/g,'&quot;')}" placeholder="e.g. Saturday Flipper">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Day of Week</label>
+          <select class="recur-day">${dayOpts}</select>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select class="recur-role">${roleOpts}</select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Start</label>
+          <input type="time" class="recur-start" value="${data.start||'09:00'}">
+        </div>
+        <div class="form-group">
+          <label>End</label>
+          <input type="time" class="recur-end" value="${data.end||'17:00'}">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Spots</label>
+          <input type="number" class="recur-spots" value="${data.spots||1}" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <input type="text" class="recur-notes" value="${(data.notes||'').replace(/"/g,'&quot;')}" placeholder="Optional notes">
+        </div>
+      </div>
+    </div>`);
+}
+
+function collectRecurringRows() {
+  return Array.from(document.querySelectorAll('#recurringShiftsList .wiz-shift-row')).map(row => ({
+    label: row.querySelector('.recur-label').value.trim(),
+    day:   row.querySelector('.recur-day').value,
+    role:  row.querySelector('.recur-role').value,
+    start: row.querySelector('.recur-start').value,
+    end:   row.querySelector('.recur-end').value,
+    spots: parseInt(row.querySelector('.recur-spots').value) || 1,
+    notes: row.querySelector('.recur-notes').value.trim(),
+  }));
+}
+
+function nextDateForDay(dayName, fromDate) {
+  const targetIdx = RECUR_DAYS.indexOf(dayName);
+  const d = new Date(fromDate);
+  const diff = (targetIdx - d.getDay() + 7) % 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+async function postRecurringShifts() {
+  const btn = document.getElementById('recurPostBtn');
+  btn.disabled = true; btn.textContent = 'Posting…';
+
+  const rows = collectRecurringRows();
+  const weeksAhead = parseInt(document.getElementById('recurWeeksAhead').value) || 12;
+
+  // Save template for next time
+  try { localStorage.setItem(RECUR_STORAGE_KEY, JSON.stringify(rows)); } catch(e) {}
+
+  const { db, ref, push, get } = window._fb;
+
+  try {
+    // Pull existing shifts once to avoid duplicate posting
+    const snap = await get(ref(db, 'shifts'));
+    const existing = snap.exists() ? snap.val() : {};
+    const existingKeys = new Set(
+      Object.values(existing).map(s => `${s.date}|${s.startTime}|${(s.visibleRoles||[]).join(',')}|${s.notes}`)
+    );
+
+    const today = new Date();
+    today.setHours(12,0,0,0);
+
+    let posted = 0, skipped = 0;
+
+    for (const row of rows) {
+      if (!row.label) continue;
+      const firstDate = nextDateForDay(row.day, today);
+
+      for (let w = 0; w < weeksAhead; w++) {
+        const d = new Date(firstDate);
+        d.setDate(d.getDate() + (w * 7));
+        const dateStr = d.toISOString().slice(0,10);
+
+        const noteText = row.label + (row.notes ? ' — ' + row.notes : '');
+        const dedupeKey = `${dateStr}|${row.start}|${row.role}|${noteText}`;
+
+        if (existingKeys.has(dedupeKey)) { skipped++; continue; }
+
+        await push(ref(db, 'shifts'), {
+          date: dateStr, startTime: row.start, endTime: row.end,
+          shiftType: row.label, notes: noteText,
+          spotsTotal: row.spots, claimers: [],
+          visibleRoles: [row.role], visiblePeople: [],
+          layout: null, createdAt: Date.now(),
+          recurringTemplate: row.label
+        });
+        existingKeys.add(dedupeKey);
+        posted++;
+      }
+    }
+
+    closeModal('recurringShiftsModal');
+    toast(`Posted ${posted} recurring shift${posted!==1?'s':''}${skipped ? ' (' + skipped + ' already existed)' : ''}!`, 'success');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Post Recurring Shifts';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // QUICK ACTIONS — Drag to Reorder (Desktop & Touch)
 // ══════════════════════════════════════════════════════════════════
 
@@ -4643,6 +4852,39 @@ window.addEventListener('load', () => { setTimeout(qaInitDraggable, 600); });
 
 </script>
 
+
+<!-- ══ RECURRING WEEKLY SHIFTS MODAL ══ -->
+<div class="modal-overlay" id="recurringShiftsModal" style="align-items:flex-start;padding-top:40px;overflow-y:auto;">
+  <div class="modal" style="width:680px;max-width:98vw;max-height:92vh;overflow-y:auto;position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <h3 class="modal-title" style="margin:0;">Recurring Weekly Shifts</h3>
+      <button onclick="closeModal('recurringShiftsModal')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--mid);">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--mid);margin-bottom:18px;">
+      Define shifts that automatically repeat every week. Each row below is one standing shift — set the day, time, and role, and it will be posted automatically going forward.
+    </p>
+
+    <div id="recurringShiftsList"></div>
+
+    <button class="btn btn-outline btn-sm" onclick="addRecurringShiftRow()" style="margin:6px 0 20px;width:100%;">
+      + Add Recurring Shift
+    </button>
+
+    <div style="background:var(--cream);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12px;color:var(--mid);">
+      Posting will create shifts for the next <strong id="recurWeeksPreview">12</strong> weeks for every row below. You can re-run this anytime to extend coverage further — duplicate shifts on the same date/role won't be created twice.
+    </div>
+
+    <div class="form-group" style="max-width:220px;">
+      <label>Post how many weeks ahead?</label>
+      <input type="number" id="recurWeeksAhead" value="12" min="1" max="52" oninput="document.getElementById('recurWeeksPreview').textContent=this.value||12">
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('recurringShiftsModal')">Close</button>
+      <button class="btn btn-sage" id="recurPostBtn" onclick="postRecurringShifts()">Post Recurring Shifts</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ EVENT WIZARD MODAL ══ -->
 <div class="modal-overlay" id="eventWizardModal" style="align-items:flex-start;padding-top:40px;overflow-y:auto;">
