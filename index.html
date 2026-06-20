@@ -931,14 +931,14 @@ h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
   }
   .mobile-menu-drawer {
     position: fixed;
-    top: 0; left: 0; bottom: 0;
+    top: 0; right: 0; bottom: 0;
     width: 82%;
     max-width: 320px;
     background: #fff;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.18);
     display: flex;
     flex-direction: column;
-    transform: translateX(-100%);
+    transform: translateX(100%);
     transition: transform 0.28s cubic-bezier(.22,.9,.32,1);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -1775,10 +1775,6 @@ input, select, textarea {
         <button class="btn btn-sage btn-sm" onclick="saveSystemSettings()">Save Settings</button>
         <span id="settingsSaved" style="font-size:12px;color:var(--sage-dark);display:none;">✓ Saved</span>
       </div>
-    </div>
-
-    <div class="report-problem-box" onclick="openReportProblemModal()" style="margin-top:20px;">
-      Report a Problem
     </div>
 
   </div>
@@ -3077,6 +3073,9 @@ function renderTeamAvailability() {
 
   if (emps.length === 0) { container.innerHTML = '<p class="text-mid text-sm">No employees yet.</p>'; return; }
 
+  const ENGINEER_EMAIL = (window._fb && window._fb.ENGINEER_EMAIL) || '';
+  const OWNER_EMAIL    = (window._fb && window._fb.OWNER_EMAIL) || '';
+
   container.innerHTML = emps.map(([uid, emp]) => {
     const avail = allTeamAvailability[uid] || {};
     const availDays = days.filter(d => avail[d] !== false); // default available
@@ -3086,13 +3085,20 @@ function renderTeamAvailability() {
       : allDays ? 'Available every day'
       : availDays.map(d => d.slice(0,3)).join(', ');
 
+    // Match the same Owner / Software Engineer display logic used on the Employees page
+    const isOwnerRow    = emp.email === OWNER_EMAIL && OWNER_EMAIL;
+    const isEngineerRow = emp.email === ENGINEER_EMAIL && ENGINEER_EMAIL;
+    const displayRole = isOwnerRow ? 'Owner' : (isEngineerRow ? 'Software Engineer' : (emp.role || 'Staff'));
+    const roleBadgeClass = isOwnerRow ? 'role-venue-manager' : (isEngineerRow ? '' : roleClass(emp.role));
+    const roleBadgeStyle = isEngineerRow ? 'background:rgba(74,85,104,0.15);color:#2d3748;' : '';
+
     return `<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
       <button type="button" onclick="toggleEmpAvail('empAvail_${uid}')"
         style="width:100%;display:flex;align-items:center;gap:14px;padding:14px 18px;background:white;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;">
         <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c8e0df,#b8dede);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;flex-shrink:0;">${(emp.firstName[0]||'?').toUpperCase()}</div>
         <div style="flex:1;">
           <div style="font-weight:500;font-size:13px;">${emp.firstName} ${emp.lastName}</div>
-          <div style="font-size:11px;color:var(--mid);margin-top:2px;"><span class="role-badge ${roleClass(emp.role)}" style="font-size:10px;padding:2px 8px;">${emp.role||'Staff'}</span></div>
+          <div style="font-size:11px;color:var(--mid);margin-top:2px;"><span class="role-badge ${roleBadgeClass}" style="font-size:10px;padding:2px 8px;${roleBadgeStyle}">${displayRole}</span></div>
         </div>
         <div style="font-size:12px;color:${noneSet ? 'var(--light)' : '#2d9e5f'};text-align:right;max-width:200px;">${summary}</div>
         <span style="color:var(--mid);font-size:14px;margin-left:8px;">▾</span>
