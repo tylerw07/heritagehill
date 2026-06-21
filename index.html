@@ -1809,6 +1809,8 @@ input, select, textarea {
     <div class="form-group">
       <label>Job Title / Role</label>
       <select id="inviteRole">
+        <option value="Owner">Owner</option>
+        <option value="Software Engineer">Software Engineer</option>
         <option value="Venue Manager">Venue Manager</option>
         <option value="Event Setup Crew">Event Setup Crew</option>
         <option value="Event Coordinator">Event Coordinator</option>
@@ -2072,6 +2074,8 @@ input, select, textarea {
     <div class="form-group">
       <label>Job Title / Role</label>
       <select id="editRole">
+        <option value="Owner">Owner</option>
+        <option value="Software Engineer">Software Engineer</option>
         <option value="Venue Manager">Venue Manager</option>
         <option value="Event Setup Crew">Event Setup Crew</option>
         <option value="Event Coordinator">Event Coordinator</option>
@@ -2325,6 +2329,31 @@ function chipColor(role) {
     'Closing Crew': '',
   };
   return map[role] || '';
+}
+
+// ── Single source of truth for how a person's "role" should DISPLAY ──
+// Owner and Engineer accounts always show their special title here,
+// regardless of whatever role value is actually stored on their profile.
+// Every place in the app that shows someone's role/title should call this
+// instead of reading emp.role directly.
+function getDisplayRole(emp) {
+  if (!emp) return 'Staff';
+  const ENGINEER_EMAIL = (window._fb && window._fb.ENGINEER_EMAIL) || '';
+  const OWNER_EMAIL    = (window._fb && window._fb.OWNER_EMAIL) || '';
+  if (OWNER_EMAIL && emp.email === OWNER_EMAIL) return 'Owner';
+  if (ENGINEER_EMAIL && emp.email === ENGINEER_EMAIL) return 'Software Engineer';
+  return emp.role || 'Staff';
+}
+
+// Matching badge/chip class — Owner uses the gold "venue-manager" styling,
+// Engineer gets no role-color class (styled separately as a badge elsewhere).
+function getDisplayRoleClass(emp) {
+  if (!emp) return 'role-coordinator';
+  const ENGINEER_EMAIL = (window._fb && window._fb.ENGINEER_EMAIL) || '';
+  const OWNER_EMAIL    = (window._fb && window._fb.OWNER_EMAIL) || '';
+  if (OWNER_EMAIL && emp.email === OWNER_EMAIL) return 'role-venue-manager';
+  if (ENGINEER_EMAIL && emp.email === ENGINEER_EMAIL) return '';
+  return roleClass(emp.role);
 }
 
 function initials(name) {
@@ -2771,14 +2800,14 @@ function renderWeekView() {
       <div class="week-emp-cell">
         <div class="emp-info">
           <div class="emp-name">${emp.firstName} ${emp.lastName}</div>
-          <div class="emp-role">${emp.role || ''}</div>
+          <div class="emp-role">${getDisplayRole(emp)}</div>
         </div>
       </div>`;
     days.forEach(d => {
       const dateStr = fmtDate(d);
       const isToday = dateStr === today;
       const dayShifts = Object.entries(allShifts).filter(([id,s]) => getShiftClaimers(s).some(c=>c.uid===uid) && s.date === dateStr);
-      const cc = chipColor(emp.role);
+      const cc = chipColor(getDisplayRole(emp));
       html += `<div class="week-day-cell${isToday ? ' today' : ''}">`;
       dayShifts.forEach(([sid, s]) => {
         html += `<div class="shift-chip ${cc}" onclick="showShiftDetail('${sid}')">${fmtTime(s.startTime)}<br>${s.shiftType || ''}</div>`;
@@ -2852,7 +2881,7 @@ function renderMonthView() {
       const emp = s.takenBy ? allEmployees[s.takenBy] : null;
       const name = emp ? emp.firstName : (s.takenByName ? s.takenByName.split(' ')[0] : null);
       const isOpen = !s.takenBy;
-      const cc = emp ? chipColor(emp.role) : '';
+      const cc = emp ? chipColor(getDisplayRole(emp)) : '';
       const cls = isOpen ? 'gold' : (cc === 'gold' ? 'gold' : cc === 'blush' ? 'blush' : 'sage');
       const label = isOpen ? `🟢 Open: ${fmtTime(s.startTime)}` : `${name}: ${fmtTime(s.startTime)}`;
       html += `<div class="month-shift ${cls}" onclick="showShiftDetail('${sid}')" title="${label}">${label}</div>`;
@@ -3073,23 +3102,19 @@ function renderTeamAvailability() {
 
   if (emps.length === 0) { container.innerHTML = '<p class="text-mid text-sm">No employees yet.</p>'; return; }
 
-  const ENGINEER_EMAIL = (window._fb && window._fb.ENGINEER_EMAIL) || '';
-  const OWNER_EMAIL    = (window._fb && window._fb.OWNER_EMAIL) || '';
-
   container.innerHTML = emps.map(([uid, emp]) => {
     const avail = allTeamAvailability[uid] || {};
     const availDays = days.filter(d => avail[d] !== false); // default available
     const noneSet = availDays.length === 0;
     const allDays = availDays.length === 7;
-    const summary = noneSet ? 'No availability set'
+    const summary = noneSet ? 'No Availability'
       : allDays ? 'Available every day'
       : availDays.map(d => d.slice(0,3)).join(', ');
 
     // Match the same Owner / Software Engineer display logic used on the Employees page
-    const isOwnerRow    = emp.email === OWNER_EMAIL && OWNER_EMAIL;
-    const isEngineerRow = emp.email === ENGINEER_EMAIL && ENGINEER_EMAIL;
-    const displayRole = isOwnerRow ? 'Owner' : (isEngineerRow ? 'Software Engineer' : (emp.role || 'Staff'));
-    const roleBadgeClass = isOwnerRow ? 'role-venue-manager' : (isEngineerRow ? '' : roleClass(emp.role));
+    const isEngineerRow = (window._fb && window._fb.ENGINEER_EMAIL) && emp.email === window._fb.ENGINEER_EMAIL;
+    const displayRole = getDisplayRole(emp);
+    const roleBadgeClass = getDisplayRoleClass(emp);
     const roleBadgeStyle = isEngineerRow ? 'background:rgba(74,85,104,0.15);color:#2d3748;' : '';
 
     return `<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
@@ -3153,7 +3178,7 @@ function renderEmployeeTable(filter='') {
   let emps = Object.entries(allEmployees);
   if (filter) {
     const f = filter.toLowerCase();
-    emps = emps.filter(([uid,e]) => `${e.firstName} ${e.lastName} ${e.role} ${e.email}`.toLowerCase().includes(f));
+    emps = emps.filter(([uid,e]) => `${e.firstName} ${e.lastName} ${e.role} ${getDisplayRole(e)} ${e.email}`.toLowerCase().includes(f));
   }
 
   if (emps.length === 0) { wrap.innerHTML = '<div class="loading">No employees found.</div>'; return; }
@@ -3176,10 +3201,9 @@ function renderEmployeeTable(filter='') {
     </tr></thead>
     <tbody>
     ${emps.map(([uid,e]) => {
-      const isOwnerRow    = e.email === OWNER_EMAIL && OWNER_EMAIL;
-      const isEngineerRow = e.email === ENGINEER_EMAIL && ENGINEER_EMAIL;
-      const displayRole = isOwnerRow ? 'Owner' : (isEngineerRow ? 'Software Engineer' : (e.role || 'Staff'));
-      const roleBadgeClass = isOwnerRow ? 'role-venue-manager' : (isEngineerRow ? '' : roleClass(e.role));
+      const isEngineerRow = ENGINEER_EMAIL && e.email === ENGINEER_EMAIL;
+      const displayRole = getDisplayRole(e);
+      const roleBadgeClass = getDisplayRoleClass(e);
       const roleBadgeStyle = isEngineerRow ? 'background:rgba(74,85,104,0.15);color:#2d3748;' : '';
       return `<tr>
       <td><strong>${e.firstName} ${e.lastName}</strong></td>
@@ -3319,7 +3343,7 @@ function populateVisibilityOptions(preRoles=[], prePeople=[]) {
   const emps = Object.entries(allEmployees).filter(([uid,e]) => e.status !== 'inactive');
   document.getElementById('peopleCheckboxes').innerHTML = emps.map(([uid,e]) => {
     const checked = prePeople.includes(uid);
-    return `<div class="check-pill${checked ? ' checked' : ''}" data-value="${uid}" onclick="togglePill(this,'peopleSelectedCount')">${e.firstName} ${e.lastName}<span style="font-size:10px;opacity:0.65;margin-left:5px;">${e.role||''}</span></div>`;
+    return `<div class="check-pill${checked ? ' checked' : ''}" data-value="${uid}" onclick="togglePill(this,'peopleSelectedCount')">${e.firstName} ${e.lastName}<span style="font-size:10px;opacity:0.65;margin-left:5px;">${getDisplayRole(e)}</span></div>`;
   }).join('');
 
   updatePillCounts();
@@ -4562,7 +4586,7 @@ function openAddToChatModal() {
   const sel = document.getElementById('addToChatSelect');
   sel.innerHTML = Object.entries(allEmployees)
     .filter(([uid,e]) => !currentMembers.includes(uid) && e.status !== 'inactive')
-    .map(([uid,e]) => `<option value="${uid}">${e.firstName} ${e.lastName} — ${e.role||''}</option>`)
+    .map(([uid,e]) => `<option value="${uid}">${e.firstName} ${e.lastName} — ${getDisplayRole(e)}</option>`)
     .join('');
   openModal('addToChatModal');
 }
@@ -4586,7 +4610,7 @@ function openNewChatModal() {
   container.innerHTML = Object.entries(allEmployees)
     .filter(([uid,e]) => e.status !== 'inactive')
     .map(([uid,e]) => `<div class="check-pill" data-value="${uid}" onclick="togglePill(this,'')">
-      ${e.firstName} ${e.lastName} <span style="font-size:10px;opacity:0.7;margin-left:4px;">${e.role||''}</span>
+      ${e.firstName} ${e.lastName} <span style="font-size:10px;opacity:0.7;margin-left:4px;">${getDisplayRole(e)}</span>
     </div>`).join('');
   openModal('newChatModal');
 }
